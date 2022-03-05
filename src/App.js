@@ -1,35 +1,32 @@
-import './App.css';
 import { useEffect, useState } from 'react';
-import Card from './components/card';
+import Header from './components/Layout/Header';
+import Main from './components/Layout/Main';
+import ProductList from './components/Layout/ProductList';
+import ShoppingList from './components/Layout/ShoppingList';
 
 function App() {
 
-  const [person, setPerson] = useState([]);
+  const [query, setQuery] = useState('');
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
     async function fetchData(){
-      const data = await fetch('https://randomuser.me/api'); 
+      const data = await fetch(`https://forkify-api.herokuapp.com/api/search?q=${query}`); 
       const res = await data.json();
-      return res;
+      setRecipes(res.recipes);
     }
 
-    for (let index = 0; index < 6; index++) {
-      fetchData().then(({ results }) => {
-        const { first, last } = results[0].name;
-        setPerson(p => [ ...p,`${first} ${last}`]);
-      });      
-    }
-  },[]);
+    query && fetchData()
+  },[query]);
 
   return (
-    <div className="App">
-      <header className="bg-gray-800 flex flex-wrap justify-center">
-          {person && person.map((el,i) => {
-            return (
-              <Card key={i} personName={el} index={i} />
-            )
-          })}
-      </header>
+    <div className="bg-white w-4/5 mt-16 mx-auto rounded-t-lg">
+        <Header/>
+        <div className='flex justify-between'>
+          <ProductList recipesList={recipes}/>
+          <Main/>
+          <ShoppingList/>
+        </div>    
     </div>
   );
 }
