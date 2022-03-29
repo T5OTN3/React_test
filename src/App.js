@@ -1,33 +1,54 @@
-import { useEffect, useState } from 'react';
-import Header from './components/Layout/Header';
-import Main from './components/Layout/Main';
-import ProductList from './components/Layout/ProductList';
-import ShoppingList from './components/Layout/ShoppingList';
+import { useEffect, useState, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import Map, {Popup, ScaleControl, Source, Layer, GeolocateControl, NavigationControl, FullscreenControl} from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiY290bmUxOTg5IiwiYSI6ImNqcmcxZWxnNDFqdzU0YW1seW43ZDZ1NjgifQ.zX_zd9Fx1zxv0Yo4gBCu_Q';
+
+const geojson = {
+  type: 'FeatureCollection',
+  features: [
+    {type: 'Feature', geometry: {type: 'Point', coordinates: [42.7, 42.2]}}
+  ]
+};
+
+const layerStyle = {
+  id: 'point',
+  type: 'circle',
+  paint: {
+    'circle-radius': 10,
+    'circle-color': '#007cbf'
+  }
+};
 
 function App() {
+  const [showPopup, setShowPopup] = useState(true);
 
-  const [query, setQuery] = useState('');
-  const [recipes, setRecipes] = useState([]);
-
-  useEffect(() => {
-    async function fetchData(){
-      const data = await fetch(`https://forkify-api.herokuapp.com/api/search?q=${query}`); 
-      const res = await data.json();
-      setRecipes(res.recipes);
-    }
-
-    query && fetchData()
-  },[query]);
 
   return (
-    <div className="bg-white w-4/5 mt-16 mx-auto rounded-t-lg">
-        <Header/>
-        <div className='flex justify-between'>
-          <ProductList recipesList={recipes}/>
-          <Main/>
-          <ShoppingList/>
-        </div>    
-    </div>
+    <Map
+        initialViewState={{
+          longitude: 42.7,
+          latitude: 42.2,
+          zoom: 8
+        }}
+        style={{width: 600, height: 400}}
+        mapStyle="mapbox://styles/mapbox/streets-v9"
+      >
+        {showPopup && (
+          <Popup longitude={42.7} latitude={42.30}
+            anchor="bottom"
+            onClose={() => setShowPopup(false)}>
+            <p className='text-lg text-orange-500'>You are here</p> 
+          </Popup>)}
+          <ScaleControl />
+          <Source id="my-data" type="geojson" data={geojson}>
+            <Layer {...layerStyle} />
+          </Source>
+          <GeolocateControl position="top-left" />
+          <FullscreenControl position="top-left" />
+          <NavigationControl position="top-left" />
+      </Map>
   );
 }
 
